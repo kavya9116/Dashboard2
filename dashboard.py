@@ -207,20 +207,73 @@ elif page == "Engagement":
 
 elif page == "Adoption":
     st.title("🚀 Adoption")
+
     c = st.columns(2)
     c[0].metric("Core Action Rate", fmt(adoption_rate, "%"))
-    c[1].metric("Adoption Sessions", f"{adoption['Session ID'].nunique():,}" if "Session ID" in adoption else "N/A")
+    c[1].metric(
+        "Adoption Sessions",
+        f"{adoption['Session ID'].nunique():,}"
+        if "Session ID" in adoption else "N/A"
+    )
 
     if "Action" in adoption:
         x = adoption["Action"].value_counts().reset_index()
         x.columns = ["Action", "Count"]
-        st.plotly_chart(px.bar(x, x="Action", y="Count", title="Actions Performed"), use_container_width=True)
 
-    if "Feature" in adoption:
-        x = adoption["Feature"].value_counts().reset_index()
-        x.columns = ["Feature", "Count"]
-        st.plotly_chart(px.pie(x, names="Feature", values="Count", title="Feature Usage"), use_container_width=True)
+        st.plotly_chart(
+            px.bar(
+                x,
+                x="Action",
+                y="Count",
+                title="Actions Performed"
+            ),
+            use_container_width=True
+        )
 
+    # User Adoption Funnel
+    if {"User ID", "Action"}.issubset(adoption.columns):
+
+        login_users = adoption.loc[
+            adoption["Action"] == "User Login", "User ID"
+        ].nunique()
+
+        cart_users = adoption.loc[
+            adoption["Action"] == "Add to Cart", "User ID"
+        ].nunique()
+
+        order_users = adoption.loc[
+            adoption["Action"] == "Order Completed", "User ID"
+        ].nunique()
+
+        funnel_data = pd.DataFrame({
+            "Stage": [
+                "Logged In",
+                "Added Product to Cart",
+                "Ordered Product"
+            ],
+            "Users": [
+                login_users,
+                cart_users,
+                order_users
+            ]
+        })
+
+        st.subheader("User Adoption Funnel")
+
+        st.plotly_chart(
+            px.funnel(
+                funnel_data,
+                y="Stage",
+                x="Users",
+                title="Login → Cart → Order"
+            ),
+            use_container_width=True
+        )
+
+        f1, f2, f3 = st.columns(3)
+        f1.metric("Logged In", f"{login_users:,}")
+        f2.metric("Added to Cart", f"{cart_users:,}")
+        f3.metric("Ordered", f"{order_users:,}")
 elif page == "Retention":
     st.title("🔄 Retention")
     c = st.columns(3)
