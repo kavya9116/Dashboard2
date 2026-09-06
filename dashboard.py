@@ -106,7 +106,6 @@ page = st.sidebar.radio("Dashboard", [
 ])
 st.sidebar.markdown("---")
 st.sidebar.caption("Data source: Cafe_Analysis_Performed.xlsx")
-st.sidebar.caption("Synthetic dataset for educational purposes.")
 
 if page == "Executive Overview":
     st.title("☕ Café Behavioral Analytics Dashboard")
